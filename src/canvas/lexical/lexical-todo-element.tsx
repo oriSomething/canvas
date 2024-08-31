@@ -85,19 +85,6 @@ export class TodoNode extends ParagraphNode {
 	}
 }
 
-// function getTaggedMatch(text: string) {
-// 	const match = TODO_RE.exec(text);
-
-// 	if (match === null) {
-// 		return null;
-// 	}
-
-// 	return {
-// 		start: 0,
-// 		end: match[0].length,
-// 	};
-// }
-
 export function TodoNodePlugin() {
 	const [editor] = useLexicalComposerContext();
 
