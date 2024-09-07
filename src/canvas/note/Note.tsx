@@ -73,6 +73,8 @@ export function Note({ id }: Props) {
 			<LexicalCanvasDndItemPlugin
 				contentEditableRef={contentEditableRef}
 				overClassName={styles.over}
+				overTopClassName={styles.overTop}
+				overBottomClassName={styles.overBottom}
 			/>
 		</LexicalComposer>
 	);

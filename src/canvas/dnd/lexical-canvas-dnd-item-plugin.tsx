@@ -5,6 +5,11 @@ import {
 	draggable,
 	dropTargetForElements,
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import {
+	attachClosestEdge,
+	extractClosestEdge,
+	type Edge,
+} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { $getRoot } from "lexical";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
@@ -14,7 +19,11 @@ import { ITEM_CLASSNAME } from "./dnd-config";
 interface Props {
 	contentEditableRef: React.RefObject<HTMLElement>;
 	overClassName: string;
+	overTopClassName: string;
+	overBottomClassName: string;
 }
+
+const DND_TYPE = "note-p";
 
 //#region Helpers
 function getElementsItems(element: HTMLElement) {
@@ -36,6 +45,8 @@ function getIndex(elements: Element[], element: Element): number {
 export function LexicalCanvasDndItemPlugin({
 	contentEditableRef: ref,
 	overClassName,
+	overTopClassName,
+	overBottomClassName,
 }: Props) {
 	const [editor] = useLexicalComposerContext();
 
@@ -60,17 +71,63 @@ export function LexicalCanvasDndItemPlugin({
 						return [
 							draggable({
 								element,
+								getInitialData() {
+									return {
+										type: DND_TYPE,
+									};
+								},
 							}),
 							dropTargetForElements({
 								element,
-								onDragEnter(event) {
+								canDrop(event) {
+									return event.source.data.type === DND_TYPE;
+								},
+								getData(args) {
+									return attachClosestEdge(
+										{
+											type: DND_TYPE,
+										},
+										{
+											input: args.input,
+											element: args.element,
+											allowedEdges: ["bottom", "top"],
+										},
+									);
+								},
+								onDrag(event) {
+									const closestEdgeOfTarget: Edge | null = extractClosestEdge(
+										event.self.data,
+									);
+
 									event.self.element.classList.add(overClassName);
+									if (closestEdgeOfTarget === "top") {
+										event.self.element.classList.remove(overBottomClassName);
+										event.self.element.classList.add(overTopClassName);
+									} else if (closestEdgeOfTarget === "bottom") {
+										event.self.element.classList.remove(overTopClassName);
+										event.self.element.classList.add(overBottomClassName);
+									} else {
+										event.self.element.classList.remove(overBottomClassName);
+										event.self.element.classList.remove(overTopClassName);
+									}
 								},
 								onDragLeave(event) {
-									event.self.element.classList.remove(overClassName);
+									event.self.element.classList.remove(
+										overClassName,
+										overBottomClassName,
+										overTopClassName,
+									);
 								},
 								onDrop(event) {
-									event.self.element.classList.remove(overClassName);
+									const closestEdgeOfTarget: Edge | null = extractClosestEdge(
+										event.self.data,
+									);
+
+									event.self.element.classList.remove(
+										overClassName,
+										overBottomClassName,
+										overTopClassName,
+									);
 
 									if (event.source.element !== event.self.element) {
 										const sourceIndex = getIndex(
@@ -82,6 +139,18 @@ export function LexicalCanvasDndItemPlugin({
 										if (sourceIndex !== -1 && targetIndex !== -1) {
 											editor.update(() => {
 												const root = $getRoot();
+
+												// root.chil
+
+												// 	etReorderDestinationIndex({
+												// 		// list: ['A', 'B', 'C'],
+												// 		// move A to left of B
+												// 		startIndex: 0,
+												// 		indexOfTarget: 1,
+												// 		closestEdgeOfTarget: 'left',
+												// 		axis: 'horizontal',
+												// }),
+
 												const target = root.getChildAtIndex(targetIndex)!;
 												const source = root.getChildAtIndex(sourceIndex)!;
 

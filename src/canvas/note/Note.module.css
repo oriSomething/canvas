@@ -28,19 +28,27 @@
 }
 
 .paragraph {
-	padding: 0.5rem 0.25rem;
+	padding: 0.75rem 0.25rem;
 	margin: 0;
 	line-height: 1.5;
 	background-color: white;
 }
 
 .paragraph:not(:last-child) {
-	margin-bottom: 0.25rem;
+	border-top: thin solid transparent;
 	border-bottom: thin solid lightgrey;
 }
 
 .over {
 	background-color: #ddd !important;
+}
+
+.overTop {
+	border-top-color: blue !important;
+}
+
+.overBottom {
+	border-bottom-color: blue !important;
 }
 
 .todo {
